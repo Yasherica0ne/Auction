@@ -1,0 +1,32 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:AuctionClient"
+                    xmlns:v="clr-namespace:System;assembly=mscorlib">
+    <v:String x:Key="m_AccountName">Имя аккаунта</v:String>
+    <v:String x:Key="m_Password">Пароль</v:String>
+    <v:String x:Key="m_SavePassword">Запомнить пароль</v:String>
+    <v:String x:Key="m_Enter">Войти</v:String>
+    <v:String x:Key="m_Cancel">Закрыть</v:String>
+    <v:String x:Key="m_CreateNewAcc">Создать новый аккаунт...</v:String>
+    <v:String x:Key="m_DontHaveAcc">Нет аккаута?</v:String>
+    <v:String x:Key="m_PasswordSecond">Введите пароль снова</v:String>
+    <v:String x:Key="m_Registry">Регистрация</v:String>
+    <v:String x:Key="m_MissPassword">Пароли не совпадают</v:String>
+    <v:String x:Key="m_Auction">Аукцион</v:String>
+    <v:String x:Key="m_Cabinet">Личный кабинет</v:String>
+    <v:String x:Key="m_AdminPanel">Админ панель</v:String>
+    <v:String x:Key="m_ActualLot">Текущий лот: </v:String>
+    <v:String x:Key="m_ActualPrice">Максимальная ставка: </v:String>
+    <v:String x:Key="m_StartAuctionTime">Начало торгов: </v:String>
+    <v:String x:Key="m_Lider">Лидер торгов:</v:String>
+    <v:String x:Key="m_Photo">Фото</v:String>
+    <v:String x:Key="m_Price">Цена</v:String>
+    <v:String x:Key="m_ProdName">Название</v:String>
+    <v:String x:Key="m_Description">Описание</v:String>
+    <v:String x:Key="m_ChooseImg">Выбрать</v:String>
+    <v:String x:Key="m_AddProduct">Добавить товар</v:String>
+    <v:String x:Key="m_ApproveProd">Утвердить товар</v:String>
+    <v:String x:Key="m_CancellProd">Запретить товар</v:String>
+    <v:String x:Key="m_PurchaseHisory">История покупок</v:String>
+    <v:String x:Key="m_SalesHistory">История продаж</v:String>
+</ResourceDictionary>

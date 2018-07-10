@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="AuctionServerWpf.MainWindow" Collapsed="true">
+    <Position X="0.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIEIAAAAAAAgAAAAAAwQBAAAQAAAAAACBAAAAgY=</HashCode>
+      <FileName>MainWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="AuctionServerWpf.Account" Collapsed="true">
+    <Position X="2.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACACAAAgAgAAAAAACAAAAIgCAAAQAgAAEAA=</HashCode>
+      <FileName>Account.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AuctionServerWpf.AuctionContext" Collapsed="true">
+    <Position X="2.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAoAAAAKAAAAABAAAAAQ=</HashCode>
+      <FileName>AuctionContext.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AuctionServerWpf.AuctionServer" Collapsed="true">
+    <Position X="2.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQCIAAAAwAAgERggAAEIIAgAQAIgAAAAAAQUAAVBAA=</HashCode>
+      <FileName>AuctionServer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AuctionServerWpf.ClientObject" Collapsed="true">
+    <Position X="2.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ICQCAACAAAAEAAAABgAAAACCAAEIAAABCAAARiiAAkI=</HashCode>
+      <FileName>ClientObject.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AuctionServerWpf.EFGenericRepository&lt;TEntity&gt;" Collapsed="true">
+    <Position X="4.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAYAAAAAAAAABABAAAAApAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>EFGenericRepository.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="AuctionServerWpf.Product" Collapsed="true">
+    <Position X="4.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAABIBAIASAgAAAAIAAAAAYAAAAmAAAAIAAAAAAIAAA=</HashCode>
+      <FileName>Product.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AuctionServerWpf.Request" Collapsed="true">
+    <Position X="4.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAIAAAACAAAAAAAAAAAAAAAAAAAIAAAACAAAAAAA=</HashCode>
+      <FileName>Request.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AuctionServerWpf.Requester" Collapsed="true">
+    <Position X="7" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gQgAgNAoCEAiggAEAAAAQAQAAgEAEAAAAIAEQABEAEI=</HashCode>
+      <FileName>Requester.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AuctionServerWpf.RequestMethods" Collapsed="true">
+    <Position X="7" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAgAgFAgCEAigggEAAAAQIQAAgEAEAAAAIAAAAAEBEA=</HashCode>
+      <FileName>RequestMethods.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AuctionServerWpf.Response" Collapsed="true">
+    <Position X="7" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAIAAAACA=</HashCode>
+      <FileName>Response.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AuctionServerWpf.Trade" Collapsed="true">
+    <Position X="7" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAABAAACAAAAIgAAECBAAAAAQEACAABAAIAAAIAAA=</HashCode>
+      <FileName>Trade.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AuctionServerWpf.UnitOfWork" Collapsed="true">
+    <Position X="9" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAYAAACAQAAAAAAAAAAAAAAAAAAKAAAAAAAAAAAQ=</HashCode>
+      <FileName>UnitOfWork.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Interface Name="AuctionServerWpf.IGenericRepository&lt;TEntity&gt;" Collapsed="true">
+    <Position X="4.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAYAAAAAAAAAAABAAAAABAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>IGenericRepository.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

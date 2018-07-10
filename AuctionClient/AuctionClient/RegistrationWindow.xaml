@@ -1,0 +1,30 @@
+﻿<Window x:Class="AuctionClient.RegistrationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AuctionClient"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen" Title="Registration" Height="212.623" Width="365.413">
+    <Grid Height="192" VerticalAlignment="Top" Margin="0,0,0,-3">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="16*"/>
+            <RowDefinition Height="167*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="151*"/>
+            <ColumnDefinition Width="206*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock TextAlignment="Right" Height="20" Margin="10,5,10,0" TextWrapping="Wrap" Text="{DynamicResource m_AccountName}" VerticalAlignment="Top" Grid.Row="1"/>
+        <TextBlock TextAlignment="Right" Height="20" Margin="10,55,10,0" TextWrapping="Wrap" Text="{DynamicResource m_Password}" VerticalAlignment="Top" Grid.Row="1"/>
+        <TextBlock TextAlignment="Right" Height="20" Margin="10,80,10,0" TextWrapping="Wrap" Text="{DynamicResource m_PasswordSecond}" VerticalAlignment="Top" Grid.Row="1"/>
+        <TextBox Name="RegLogin" TextChanged="RegLogin_TextChanged" Grid.Column="1" Height="20" Margin="0,4,10,0" TextWrapping="Wrap" VerticalAlignment="Top" Grid.Row="1"/>
+        <PasswordBox Name="FirstPass" PasswordChanged="FirstPass_PasswordChanged" Grid.Column="1" Height="20" Margin="0,55,10,0" VerticalAlignment="Top" Grid.Row="1"/>
+        <PasswordBox Name="SecondPass" PasswordChanged="SecondPass_PasswordChanged" Grid.Column="1" Height="20" Margin="0,80,10,0" VerticalAlignment="Top" Grid.Row="1"/>
+        <Button Name="Registry" IsEnabled="False" Click="Regisration_Click" HorizontalContentAlignment="Left" Grid.ColumnSpan="2" Content="{DynamicResource m_Registry}" HorizontalAlignment="Left" Height="20" Margin="100,130,0,0" Grid.Row="1" VerticalAlignment="Top" Width="159"/>
+        <TextBlock Name="Warning" HorizontalAlignment="Left" Margin="0,105,0,0" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Top" Height="20" Width="196" Grid.Column="1"/>
+        <TextBlock TextAlignment="Right" Height="20" Margin="10,30,10,0" TextWrapping="Wrap" Text="Email" VerticalAlignment="Top" Grid.Row="1"/>
+        <TextBox x:Name="Email" Grid.Column="1" Height="20" Margin="0,30,10,0" VerticalAlignment="Top" Grid.Row="1"/>
+
+    </Grid>
+</Window>

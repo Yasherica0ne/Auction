@@ -1,0 +1,36 @@
+﻿<Window x:Class="AuctionServerWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AuctionServerWpf"
+        xmlns:xclb="http://schemas.microsoft.com/netfx/2009/xaml/presentation"
+        mc:Ignorable="d"
+        Title="MainWindow" Loaded="Window_Loaded" Closing="MainWindow_Closing" Height="410.2" Width="868">
+    <Grid>
+        <Button x:Name="StartTrade" Click="StartTrade_Click" Content="Start Trade" HorizontalAlignment="Left" Height="30" Margin="57,57,0,0" VerticalAlignment="Top" Width="110"/>
+        <TextBlock x:Name="TradeTimer" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Timer" VerticalAlignment="Top" Margin="296,57,0,0" FontSize="26" Height="30" Width="110"/>
+        <TextBlock x:Name="ErrorText" Foreground="Red" HorizontalAlignment="Left" TextWrapping="Wrap" Text="ErrorText" VerticalAlignment="Top" Margin="57,265,0,0" FontSize="14" Height="30" Width="401"/>
+        <TextBlock x:Name="LastRequestMethodName" HorizontalAlignment="Left" TextWrapping="Wrap" Text="LastRequest" VerticalAlignment="Top" Margin="57,230,0,0" FontSize="26" Height="30" Width="401"/>
+        <TextBlock x:Name="ProductName" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Product name" VerticalAlignment="Top" Margin="189,109,0,0" FontSize="26" Height="40" Width="301"/>
+        <TextBlock x:Name="ProductId" HorizontalAlignment="Left" TextWrapping="Wrap" Text="ID" VerticalAlignment="Top" Margin="57,109,0,0" FontSize="26" Height="30" Width="110"/>
+        <TextBlock x:Name="StartTime" HorizontalAlignment="Left" TextWrapping="Wrap" Text="StartTime" VerticalAlignment="Top" Margin="57,160,0,0" FontSize="26" Height="30" Width="110"/>
+        <xclb:ListView Name="TradeList"  ItemsSource="{Binding TradesList}" Height="369" Margin="490,10,10,0" VerticalAlignment="Top">
+            <xclb:ListView.ItemsPanel>
+                <xclb:ItemsPanelTemplate>
+                    <xclb:WrapPanel Width="310" ItemHeight="150" ItemWidth="150" Orientation="Horizontal"/>
+                </xclb:ItemsPanelTemplate>
+            </xclb:ListView.ItemsPanel>
+            <xclb:ListView.ItemTemplate>
+                <xclb:DataTemplate >
+                    <StackPanel Width="150" Height="150">
+                        <Image Height="110" Width="150" Source="{Binding ImageSource}" />
+                        <TextBlock Height="20" FontSize="14" VerticalAlignment="Bottom" HorizontalAlignment="Center" Text="{Binding ProductName}" ></TextBlock>
+                        <TextBlock Height="20" FontSize="14" VerticalAlignment="Bottom" HorizontalAlignment="Center" Text="{Binding MaxBet}" ></TextBlock>
+                    </StackPanel>
+                </xclb:DataTemplate>
+            </xclb:ListView.ItemTemplate>
+        </xclb:ListView>
+
+    </Grid>
+</Window>

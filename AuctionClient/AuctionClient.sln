@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2009
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuctionClient", "AuctionClient\AuctionClient.csproj", "{3B46A785-C0AE-42B6-AF51-9242F9804452}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3B46A785-C0AE-42B6-AF51-9242F9804452}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B46A785-C0AE-42B6-AF51-9242F9804452}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B46A785-C0AE-42B6-AF51-9242F9804452}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B46A785-C0AE-42B6-AF51-9242F9804452}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7CD8140D-9A6C-4D69-92A5-08F4A4A73780}
+	EndGlobalSection
+EndGlobal
