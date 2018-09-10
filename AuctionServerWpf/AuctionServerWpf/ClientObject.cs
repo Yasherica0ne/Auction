@@ -14,19 +14,17 @@ namespace AuctionServerWpf
     {
         private string id;
         protected internal NetworkStream Stream { get; private set; }
-        public bool IsOpen { get => isOpen; set => isOpen = value; }
-        public AuctionServer Server { get => server; set => server = value; }
+        public bool IsOpen { get; set; } = false;
+        public AuctionServer Server { get; set; }
         protected internal string Id { get => id; private set => id = value; }
-        public Account Account { get => account; set => account = value; }
-        public byte[] ImageBytes { get => imageBytes; set => imageBytes = value; }
-        public bool IsRecievingImage { get => isRecievingImage; set => isRecievingImage = value; }
-        public int ImageBytesCount { get => imageBytesCount; set => imageBytesCount = value; }
-        public bool IsFullImage { get => isFullImage; set => isFullImage = value; }
+        public Account Account { get; set; }
+        public byte[] ImageBytes { get; set; } = null;
+        public bool IsRecievingImage { get; set; } = false;
+        public int ImageBytesCount { get; set; } = 0;
+        public bool IsFullImage { get; set; } = false;
+        public Auction Auction { get; set; }
 
-        Account account;
         TcpClient client;
-        AuctionServer server; // объект сервера
-        bool isOpen = false;
 
         public ClientObject(TcpClient tcpClient, AuctionServer serverObject)
         {
@@ -34,6 +32,7 @@ namespace AuctionServerWpf
             client = tcpClient;
             Server = serverObject;
             serverObject.AddConnection(this);
+            Auction = null;
         }
 
         List<Request> requestList = new List<Request>();
@@ -49,68 +48,56 @@ namespace AuctionServerWpf
                 // в бесконечном цикле получаем сообщения от клиента
                 while (true)
                 {
-                    try
+                    message = GetMessage();
+                    if (message.Length == 0) continue;
+                    string[] bufMesaage = message.ToString().Split('%');
+                    for (int i = 0; i < bufMesaage.Length; i++)
                     {
-                        message = GetMessage();
-                        if (message.Length == 0) continue;
-                        string[] bufMesaage = message.ToString().Split('%');
-                        for (int i = 0; i < bufMesaage.Length; i++)
+                        if (i + 1 == bufMesaage.Length)
                         {
-                            if (i + 1 == bufMesaage.Length)
-                            {
-                                if (bufMesaage[i] != "")
-                                    notFullMessage = bufMesaage[i];
-                                else
-                                    notFullMessage = null;
-                                break;
-                            }
-                            requestList.Add(AuctionServer.DeserializeFromString<Request>(bufMesaage[i]));
+                            if (bufMesaage[i] != "")
+                                notFullMessage = bufMesaage[i];
+                            else
+                                notFullMessage = null;
+                            break;
                         }
-                        while(requestList.Count() != 0)
-                        {
-                            Request request = requestList.First();
-                            MainWindow.Main.Dispatcher.Invoke(() =>
-                            {
-                                MainWindow.Main.LastRequestMethodName.Text = request.MethodName;
-                            });
-                            Requester methodInvoker = new Requester(request.Parametr, this);
-                            MethodInfo methodInfo = typeof(Requester).GetMethod(request.MethodName);
-                            // Create "thisParameter" needed to call instance methods.
-                            var thisParameter = Expression.Constant(methodInvoker);
-                            // Create an expression for the method call "Calculate" and specify its parameter(s).
-                            // If the method was a static method, the "thisParameter" must be removed.
-                            MethodCallExpression methodCall = Expression.Call(thisParameter, methodInfo);
-                            // Create lambda expression from MethodCallExpression.
-                            Expression<Func<string>> lambda = Expression.Lambda<Func<string>>(methodCall);
-                            // Compile lambda expression to a Func<>.
-                            Func<string> func = lambda.Compile();
-                            // Dynamically call instance method by "name".
-                            func();
-                            requestList.Remove(request);
-                        }
+                        requestList.Add(AuctionServer.DeserializeFromString<Request>(bufMesaage[i]));
                     }
-                    catch(Exception ex)
+                    while (requestList.Count() != 0)
                     {
-                        throw (ex);
+                        Request request = requestList.First();
+                        MainWindow.Main.Dispatcher.Invoke(() =>
+                        {
+                            MainWindow.Main.LastRequestMethodName.Text = request.MethodName;
+                        });
+                        Requester methodInvoker = new Requester(request.Parametr, this);
+                        MethodInfo methodInfo = typeof(Requester).GetMethod(request.MethodName);
+                        // Create "thisParameter" needed to call instance methods.
+                        var thisParameter = Expression.Constant(methodInvoker);
+                        // Create an expression for the method call "Calculate" and specify its parameter(s).
+                        // If the method was a static method, the "thisParameter" must be removed.
+                        MethodCallExpression methodCall = Expression.Call(thisParameter, methodInfo);
+                        // Create lambda expression from MethodCallExpression.
+                        Expression<Func<string>> lambda = Expression.Lambda<Func<string>>(methodCall);
+                        // Compile lambda expression to a Func<>.
+                        Func<string> func = lambda.Compile();
+                        // Dynamically call instance method by "name".
+                        func();
+                        requestList.Remove(request);
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine(e.Message);
+                //System.Windows.MessageBox.Show(ex.Message);
             }
             finally
             {
                 // в случае выхода из цикла закрываем ресурсы
-                Server.RemoveConnection(this.Id);
+                Server.RemoveConnection(Id);
                 Close();
             }
         }
-
-        private byte[] imageBytes = null;
-        private bool isRecievingImage = false;
-        private int imageBytesCount = 0;
-        private bool isFullImage = false;
 
         // чтение входящего сообщения и преобразование в строку
         private string GetMessage()
@@ -119,18 +106,18 @@ namespace AuctionServerWpf
             StringBuilder builder = new StringBuilder();
             do
             {
-                if (!isRecievingImage)
+                if (!IsRecievingImage)
                 {
                     builder.Append(reader.ReadString());
                 }
                 else
                 {
-                    while (imageBytesCount == 0) ;
-                    imageBytes = new byte[imageBytesCount];
-                    imageBytes = reader.ReadBytes(imageBytesCount);
-                    isFullImage = true;
-                    imageBytesCount = 0;
-                    isRecievingImage = false;
+                    while (ImageBytesCount == 0) ;
+                    ImageBytes = new byte[ImageBytesCount];
+                    ImageBytes = reader.ReadBytes(ImageBytesCount);
+                    IsFullImage = true;
+                    ImageBytesCount = 0;
+                    IsRecievingImage = false;
                 }
             }
             while (Stream.DataAvailable);

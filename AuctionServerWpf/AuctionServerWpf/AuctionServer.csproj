@@ -98,6 +98,7 @@
     </ApplicationDefinition>
     <Compile Include="Account.cs" />
     <Compile Include="Auction.cs" />
+    <Compile Include="AuctionServer.cs" />
     <Compile Include="EFGenericRepository.cs" />
     <Compile Include="IGenericRepository.cs" />
     <Compile Include="MainWindowViewModel.cs" />
@@ -117,7 +118,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AuctionContext.cs" />
-    <Compile Include="AuctionServer.cs" />
     <Compile Include="ClientObject.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

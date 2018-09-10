@@ -5,11 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Windows;
 using System.Windows.Threading;
 
 namespace AuctionClient
 {
-    class Requester : RequestMethods
+    class Requester
     {
         List<Response> responseList;
         public delegate void MethodContainer(string response);
@@ -19,160 +20,76 @@ namespace AuctionClient
         public static event MethodContainer OnTradeupdate;
         public static event MethodContainer OnStatusBarTradeUpdate;
         public static event MethodContainer OnStatusBarProductUpdate;
-
-
-
-        private static string response;
-
-        public static string Response { get => response; set => response = value; }
-        public static Timer Timer { get => timer; set => timer = value; }
-
-        private static Timer timer = null;
-        private static bool isError = false;
+        private RequestMethods methods;
 
         private string GetFirstMessage()
         {
             return responseList.FirstOrDefault().Message;
         }
 
-        private static void OnTimedEvent(Object source, ElapsedEventArgs e)
-        {
-            isError = true;
-            timer.Dispose();
-        }
-
-        public static void TimerSet()
-        {
-            // Create a timer with a three second interval.
-            timer = new Timer(3000);
-            // Hook up the Elapsed event for the timer. 
-            timer.Elapsed += OnTimedEvent;
-            timer.Start();
-        }
-
-        public static Task<T> WaitResponseAsync<T>()
-        {
-            try
-            {
-                bool key = true;
-                //TimerSet();
-                return Task.Run(() =>
-                {
-                    while (key)
-                    {
-                        if (isError) throw new Exception("Превышено время ожидания ответа от сервера"); ;
-                        if (response != null) key = false;
-                    }
-                    //timer.Stop();
-                    //timer.Close();
-                    return ClientAuction.DeserializeFromString<T>(response);
-                });
-            }
-            catch (Exception ex)
-            {
-                throw (ex);
-            }
-        }
-
-        public static T WaitResponse<T>()
-        {
-            try
-            {
-                bool key = true;
-                //TimerSet();
-                while (key)
-                {
-                    if (isError) throw new Exception("Превышено время ожидания ответа от сервера"); ;
-                    if (response != null) key = false;
-                }
-                //timer.Stop();
-                //timer.Close();
-                return ClientAuction.DeserializeFromString<T>(response);
-            }
-            catch (Exception ex)
-            {
-                throw (ex);
-            }
-        }
-
-        public static void CreateRequest<T>(string methodName, T reqObj)
-        {
-            try
-            {
-                if (!ClientAuction.Stream.CanWrite)
-                {
-                    if (!ServerConnector.ConnectToServer())
-                    {
-                        throw new Exception("Сервер не доступен");
-                    }
-                }
-                string parametr = ClientAuction.SerializeToString(reqObj);
-                Request request = new Request(parametr, methodName);
-                response = null;
-                ClientAuction.SendMessage(ClientAuction.SerializeToString(request));
-            }
-            catch (Exception ex)
-            {
-                throw (ex);
-            }
-        }
-
-        public static void CreateRequest(string methodName)
-        {
-            CreateRequest(methodName, "");
-        }
-
         public Requester(List<Response> responseList)
         {
             this.responseList = responseList;
+            methods = RequestMethods.GetRequestMethods();
         }
 
-        public override string GetActualTrade()
-        {
-            response = GetFirstMessage();
-            OnStatusBarTradeUpdate?.Invoke(GetFirstMessage());
-            return null;
-        }
+        //public override string GetActualTrade()
+        //{
+        //    response = GetFirstMessage();
+        //    PulseLocker();
+        //    OnStatusBarTradeUpdate?.Invoke(GetFirstMessage());
+        //    return null;
+        //}
 
-        public override string GetActualProduct()
+        public string GetActualProduct()
         {
-            response = GetFirstMessage();
+            methods.Response = GetFirstMessage();
+            methods.PulseLocker();
             OnStatusBarProductUpdate?.Invoke(GetFirstMessage());
             return null;
         }
 
-        public override string SetTimer()
+        public string SetTimer()
         {
             OnTimer?.Invoke(GetFirstMessage());
             return null;
         }
 
-        public override string UpdateTrade()
+        public string UpdateTrade()
         {
             OnTradeupdate?.Invoke(GetFirstMessage());
             return null;
         }
 
-        public override string GetPhoto()
+        public string GetPhoto()
         {
-            RequestMethods methods = new RequestMethods();
-            string message = GetFirstMessage();
-            ClientAuction.IsRecieveImage = true;
-            CreateRequest(methods.GetPhotoSt2());
-            ClientAuction.RecieveImage(ClientAuction.DeserializeFromString<int>(message));
-            response = "true";
-            return null;
+            try
+            {
+                string message = GetFirstMessage();
+                ClientAuction.IsRecieveImage = true;
+                methods.CreateRequest("GetPhotoSt2");
+                ClientAuction.RecieveImage(ClientAuction.DeserializeFromString<int>(message));
+                methods.Response = "true";
+                methods.PulseLocker();
+                return null;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                return null;
+            }
         }
 
-        public override string DisconnectServer()
+        public string DisconnectServer()
         {
             MainWindow.Logout();
             return null;
         }
 
-        public override string SendDefaultResponse()
+        public string SendDefaultResponse()
         {
-            response = GetFirstMessage();
+            methods.Response = GetFirstMessage();
+            methods.PulseLocker();
             return null;
         }
     }

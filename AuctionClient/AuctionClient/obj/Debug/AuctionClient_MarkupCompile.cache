@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-E:\GitHub\OOP2\AuctionClient\AuctionClient\obj\Debug\
+E:\GitHub\Auction\AuctionClient\AuctionClient\obj\Debug\
 AuctionClient
 none
 false
 DEBUG;TRACE
-E:\GitHub\OOP2\AuctionClient\AuctionClient\App.xaml
-12-2120359189
+E:\GitHub\Auction\AuctionClient\AuctionClient\App.xaml
+11-186987386
 
-32-639389136
-83449354246
-AddProductWindow.xaml;AdminPanel.xaml;AfterTrade.xaml;AuctionPage.xaml;MyCabPage.xaml;ProductVisual.xaml;RaiseMaxBetButton.xaml;RegistrationWindow.xaml;Resources\lang.ru-RU.xaml;MainWindow.xaml;TradesMenu.xaml;Window1.xaml;
+34-1331362047
+83-878835676
+AddProductWindow.xaml;AdminPanel.xaml;AfterTrade.xaml;AuctionPage.xaml;MyCabPage.xaml;ProductVisual.xaml;RegistrationWindow.xaml;Resources\lang.ru-RU.xaml;MainWindow.xaml;TradesMenu.xaml;Window1.xaml;
 
-False
+True
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Sockets;
 using System.Reflection;
@@ -12,49 +11,52 @@ namespace AuctionClient
 {
     public class ClientAuction
     {
-        static string userName;
         private const string host = "127.0.0.1";
         private const int port = 8888;
-        static TcpClient client;
-        static NetworkStream stream;
         static List<string> sender = new List<string>();
-        static bool isOpenMain = false;
 
-        public static string UserName { get => userName; set => userName = value; }
+        public static string UserName { get; set; }
 
         public static string Host => host;
 
         public static int Port => port;
 
-        public static TcpClient Client { get => client; set => client = value; }
-        public static NetworkStream Stream { get => stream; set => stream = value; }
-        public static bool IsOpenMain { get => isOpenMain; set => isOpenMain = value; }
-        public static byte[] ImageBytes { get => imageBytes; set => imageBytes = value; }
-        public static bool IsFullImage { get => isFullImage; set => isFullImage = value; }
-        public static bool Key { get => key; set => key = value; }
-        public static bool IsRecieveImage { get => isRecieveImage; set => isRecieveImage = value; }
-        internal static Response LastMethod { get => lastMethod; set => lastMethod = value; }
-        public static string Message { get => message; set => message = value; }
+        public static TcpClient Client { get; set; }
+        public static NetworkStream Stream { get; set; }
+        public static bool IsOpenMain { get; set; } = false;
+        public static byte[] ImageBytes { get; set; } = null;
+        public static bool IsFullImage { get; set; } = false;
+        public static bool Key { get; set; } = true;
+        public static bool IsRecieveImage { get; set; } = false;
+        internal static Response LastMethod { get; set; }
+        public static string Message { get; set; }
         private static ServerConnector serverConnector = new ServerConnector();
         
 
         // отправка сообщений
         public static void SendMessage(string message)
         {
-            if (stream != null)
+            try
             {
-                BinaryWriter writer = new BinaryWriter(Stream);
-                writer.Write(message + "%");
+                if (Stream != null)
+                {
+                    BinaryWriter writer = new BinaryWriter(Stream);
+                    writer.Write(message + "%");
+                }
+                else if (ServerConnector.ConnectToServer())
+                {
+                    SendMessage(message);
+                }
             }
-            else if (ServerConnector.ConnectToServer())
+            catch(Exception ex)
             {
-                SendMessage(message);
+                string messageXui = ex.Message;
             }
         }
 
         public static void SendMessageInBytes(byte[] data)
         {
-            if (stream != null)
+            if (Stream != null)
             {
                 BinaryWriter writer = new BinaryWriter(Stream);
                 writer.Write(data);
@@ -79,44 +81,40 @@ namespace AuctionClient
                 Expression<Func<string>> lambda = Expression.Lambda<Func<string>>(methodCall);
                 Func<string> func = lambda.Compile();
                 func();
+                //System.Threading.Thread receiveThread = new System.Threading.Thread(new System.Threading.);
+                //receiveThread.Start(); //старт потока
             }
             catch (Exception ex)
             {
                 throw (ex);
             }
         }
-
-        private static byte[] imageBytes = null;
-        private static bool isFullImage = false;
-        private static bool isRecieveImage = false;
 
         public static void RecieveImage(int bytesCount)
         {
             try
             {
-                imageBytes = new byte[bytesCount];
-                BinaryReader reader = new BinaryReader(stream);
-                imageBytes = reader.ReadBytes(bytesCount);
-                isFullImage = true;
+                ImageBytes = new byte[bytesCount];
+                BinaryReader reader = new BinaryReader(Stream);
+                ImageBytes = reader.ReadBytes(bytesCount);
+                IsFullImage = true;
                 IsRecieveImage = false;
             }
             catch (Exception ex)
             {
+                System.Windows.MessageBox.Show(ex.Message);
                 throw (ex);
             }
         }
-        private static Response lastMethod;
 
-        private static bool key = true;
-        private static string message;
         // получение сообщений
         public static void ReceiveMessage()
         {
-            while (key)
+            while (Key)
             {
                 try
                 {
-                    BinaryReader reader = new BinaryReader(stream);
+                    BinaryReader reader = new BinaryReader(Stream);
                     StringBuilder builder = new StringBuilder();
                     do
                     {
@@ -139,13 +137,14 @@ namespace AuctionClient
                     }
                     foreach (Response response in responseList)
                     {
-                        lastMethod = response;
+                        LastMethod = response;
                         InvokeMethod(response);
                     }
                     responseList.Clear();
                 }
                 catch (Exception ex)
                 {
+                    //System.Windows.MessageBox.Show(ex.Message);
                     ClearConnect();
                 }
             }
@@ -178,7 +177,12 @@ namespace AuctionClient
 
         public static void ClearConnect()
         {
-            Key = false;
+            if (Stream.CanWrite)
+            {
+                RequestMethods methods = RequestMethods.GetRequestMethods();
+                methods.DisconnectServer();
+                Key = false;
+            }
             if (Stream != null)
                 Stream.Close();//отключение потока
             if (Client != null)

@@ -29,28 +29,9 @@ namespace AuctionClient
         {
             get
             {
-                RequestMethods requestMethods = new RequestMethods();
-                Requester.CreateRequest(requestMethods.GetEmail(), selectedProduct.OwnerId);
-                return Requester.WaitResponse<string>();
+                RequestMethods requestMethods = RequestMethods.GetRequestMethods();
+                return requestMethods.GetEmail(selectedProduct.OwnerId);
             }
         }
-
-
-        //public async Task<bool> ChangeProduct(Product product)
-        //{
-        //    RequestMethods methods = new RequestMethods();
-        //    ProductName.Text = product.Name;
-        //    TopPrice.Text = product.Price + "$";
-        //    Description.Text = product.Description;
-        //    Requester.CreateRequest(methods.GetPhoto(), product.ProductID);
-        //    await Requester.WaitResponseAsync<bool>();
-        //    ProdImage.Stretch = Stretch.Uniform;
-        //    ProdImage.Source = (BitmapSource)new ImageSourceConverter().ConvertFrom(ClientAuction.ImageBytes);
-        //    ClientAuction.IsFullImage = false;
-        //    Requester.CreateRequest(methods.GetEmail(), product.OwnerId);
-        //    EmailText.Text = await Requester.WaitResponseAsync<string>();
-        //    return true;
-        //    }
-        //}
     }
 }

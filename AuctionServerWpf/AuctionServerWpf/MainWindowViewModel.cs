@@ -18,8 +18,16 @@ namespace AuctionServerWpf
         {
             using (AuctionContext db = new AuctionContext())
             {
-                TradesList = new ObservableCollection<Trade>(db.Trades);
+                if (db.Trades.Count() == 0)
+                {
+                    TradesList = new ObservableCollection<Trade>();
+                }
+                else
+                {
+                    TradesList = new ObservableCollection<Trade>(db.Trades);
+                }
             }
+            DateTime time = DateTime.Now;
         }
     }
 }

@@ -57,15 +57,12 @@ namespace AuctionClient
                     MessageBox.Show("Цена задана не верно", "Ошибка", MessageBoxButton.OK);
                 else
                 {
-                    RequestMethods methods = new RequestMethods();
+                    RequestMethods methods = RequestMethods.GetRequestMethods();
                     Product product = new Product(ImagePath.Text, float.Parse(Price.Text, System.Globalization.CultureInfo.InvariantCulture), Name.Text, rtbDescription.Text, account.AccountId);
                     byte[] imageBt = File.ReadAllBytes(ImagePath.Text);
-                    Requester.CreateRequest(methods.AddProduct(), product);
-                    int id = await Requester.WaitResponseAsync<int>();
-                    Requester.CreateRequest(methods.PreSetProductPhoto(), imageBt.Length);
-                    ClientAuction.SendMessageInBytes(imageBt);
-                    Requester.CreateRequest(methods.SetProductPhoto(), id);
-                    if(await Requester.WaitResponseAsync<bool>())
+                    int id = await methods.AddProductAsync(product);
+                    bool isAdded = await methods.SetProductPhotoAsync(id, imageBt);
+                    if(isAdded)
                     {
                         MessageBox.Show("Лот добавлен", "Уведомление");
                     }

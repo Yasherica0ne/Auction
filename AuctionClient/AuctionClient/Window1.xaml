@@ -30,13 +30,7 @@
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </TextBox>
-                <PasswordBox x:Name="PasswordBox" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Margin="0,28,26,0" Height="20" VerticalAlignment="Top">
-                    <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="PasswordChanged">
-                            <i:InvokeCommandAction Command="{Binding PasswordChangedCommand}" />
-                        </i:EventTrigger>
-                    </i:Interaction.Triggers>
-                </PasswordBox>
+                <PasswordBox x:Name="PasswordBox" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Margin="0,28,26,0" Height="20" VerticalAlignment="Top" PasswordChanged="PasswordBox_PasswordChanged" />
                 <CheckBox x:Name="IsSavePassword" IsChecked="{Binding SavePasswordIsChecked}" Content="{DynamicResource m_SavePassword}" Grid.Column="1" HorizontalAlignment="Left" Height="18" Margin="0,53,0,0" Grid.Row="1" VerticalAlignment="Top" Width="163" Grid.ColumnSpan="3"/>
                 <Button IsEnabled="{Binding EnterButtonIsEnabled}" Command="{Binding EnterClickCommand}" Focusable="True" x:Name="Enter" Grid.ColumnSpan="2" Content="{DynamicResource m_Enter}" HorizontalContentAlignment="Left" Height="20" Margin="0,73,10,0" Grid.Row="1" VerticalAlignment="Top" Grid.Column="1"/>
                 <Button x:Name="Cancel" Content="{DynamicResource m_Cancel}" Command="{Binding CancelClickCommand}" HorizontalContentAlignment="Left" Height="20" Margin="10,73,26,0" Grid.Row="1" VerticalAlignment="Top" Grid.Column="3"/>

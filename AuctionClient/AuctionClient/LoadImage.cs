@@ -7,11 +7,9 @@ namespace AuctionClient
     {
         public static BitmapSource ImageSource(int productID)
         {
-            RequestMethods methods = new RequestMethods();
-            Requester.CreateRequest(methods.GetPhoto(), productID);
-            Requester.WaitResponse<bool>();
-            ClientAuction.IsFullImage = false;
-            return (BitmapSource)new ImageSourceConverter().ConvertFrom(ClientAuction.ImageBytes);
+            RequestMethods methods = RequestMethods.GetRequestMethods();
+            byte[] bytes = methods.GetPhoto(productID);
+            return (BitmapSource)new ImageSourceConverter().ConvertFrom(bytes);
         }
     }
 }

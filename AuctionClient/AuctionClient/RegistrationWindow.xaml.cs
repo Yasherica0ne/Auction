@@ -81,18 +81,17 @@ namespace AuctionClient
                     Warning.Text = "Неверный пароль";
                     return;
                 }
-                EnteringWindow entering = (EnteringWindow)Owner;
+                //EnteringWindow entering = (EnteringWindow)Owner;
                 if (!ServerConnector.IsConnectionOpened)
                 {
                     ServerConnector.ConnectToServer();
                 }
                 if (ServerConnector.IsConnectionOpened)
                 {
-                    RequestMethods methods = new RequestMethods();
+                    RequestMethods methods = RequestMethods.GetRequestMethods();
                     Account account = new Account(RegLogin.Text, Account.GetHashCode(FirstPass.Password), Email.Text);
-                    Requester.CreateRequest(methods.Registration(), account);
-                    string result = await Requester.WaitResponseAsync<string>();
-                    if (result.Equals("false"))
+                    bool result = await methods.RegistrationAsync(account); 
+                    if (!result)
                     {
                         MessageBox.Show("Такой аккаунт уже существует", "Ошибка", MessageBoxButton.OK);
                     }

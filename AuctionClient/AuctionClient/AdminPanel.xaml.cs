@@ -21,14 +21,13 @@ namespace AuctionClient
     /// </summary>
     public partial class AdminPanel : Page
     {
-        RequestMethods methods = new RequestMethods();
+        RequestMethods methods;
 
         private async void SetProductList()
         {
             try
             {
-                Requester.CreateRequest(methods.GetNewProductList());
-                ProductList.ItemsSource = await Requester.WaitResponseAsync<List<Product>>();
+                ProductList.ItemsSource = await methods.GetNewProductListAsync();
                 ProductList.DisplayMemberPath = "Name";
             }
             catch (Exception ex)
@@ -39,15 +38,17 @@ namespace AuctionClient
 
         public AdminPanel()
         {
+            methods = RequestMethods.GetRequestMethods();
             InitializeComponent();
             SetProductList();
         }
 
 
-        private async void ProductList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ProductList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ProductList.SelectedItem == null) return;
             Product product = (Product)ProductList.SelectedItem;
+            ((ProductVisualViewModel)((ProductVisual)ProductFrame.Content).DataContext).SelectedProduct = product;
             //await ((ProductVisual)ProductFrame.Content).ChangeProduct(product);
         }
 
@@ -56,8 +57,7 @@ namespace AuctionClient
             try
             {
                 if (ProductList.SelectedItem == null) return;
-                Requester.CreateRequest(methods.ApproveNewProduct(), ((Product)ProductList.SelectedItem).ProductID);
-                bool isTrueResponse = await Requester.WaitResponseAsync<bool>();
+                bool isTrueResponse = await methods.ApproveNewProductAsync(((Product)ProductList.SelectedItem).ProductID);
                 if (isTrueResponse) MessageBox.Show("Товар одобрен", "Уведомление");
                 else MessageBox.Show("Ошибка выполнения", "Уведомление");
             }
@@ -72,8 +72,7 @@ namespace AuctionClient
             try
             {
                 if (ProductList.SelectedItem == null) return;
-                Requester.CreateRequest(methods.CancelNewProduct(), ((Product)ProductList.SelectedItem).ProductID);
-                bool isTrueResponse = await Requester.WaitResponseAsync<bool>();
+                bool isTrueResponse = await methods.CancelNewProductAsync(((Product)ProductList.SelectedItem).ProductID);
                 if (isTrueResponse) MessageBox.Show("Товар удалён", "Уведомление");
                 else MessageBox.Show("Ошибка выполнения", "Уведомление");
             }

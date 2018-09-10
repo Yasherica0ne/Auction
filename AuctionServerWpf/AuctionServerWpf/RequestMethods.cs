@@ -110,6 +110,10 @@
         {
             return "EnterToTrade";
         }
+        public virtual string LeaveTrade()
+        {
+            return "LeaveTrade";
+        }
         public virtual string GetProductById()
         {
             return "GetProductById";

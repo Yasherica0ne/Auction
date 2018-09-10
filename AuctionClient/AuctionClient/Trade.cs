@@ -40,15 +40,15 @@ namespace AuctionClient
             tradeStartTime = new DateTime();
             tradeFinishTime = new DateTime();
         }
-
+        
         [ScriptIgnore]
         public string ProductName
         {
             get
             {
-                RequestMethods methods = new RequestMethods();
-                Requester.CreateRequest(methods.GetProductById(), ProductId);
-                return Requester.WaitResponse<Product>().Name;
+                RequestMethods methods = RequestMethods.GetRequestMethods();
+                Product product = methods.GetProductById(ProductId);
+                return product.Name;
             }
         }
 

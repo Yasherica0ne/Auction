@@ -1,16 +1,29 @@
-﻿using System;
+﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace AuctionClient
 {
-    class TradeMenuViewModel : BaseViewModel
+    class TradeMenuViewModel : ViewModelBase
     {
-        public ObservableCollection<Trade> TradesList { get; set; }
+        private ObservableCollection<Trade> tradesList;
+        private static RequestMethods methods = RequestMethods.GetRequestMethods();
+        public ObservableCollection<Trade> TradesList
+        {
+            get => tradesList;
+            set
+            {
+                tradesList = value;
+                RaisePropertyChanged("TradesList");
+            }
+        }
 
         public static event PropertyChangedEventHandler StaticPropertyChanged;
 
@@ -26,17 +39,14 @@ namespace AuctionClient
             set
             {
                 listViewWidth = value;
-                OnPropertyChanged("ListViewWidth");
-                OnPropertyChanged("WrapPanelWidth");
+                RaisePropertyChanged("ListViewWidth");
+                RaisePropertyChanged("WrapPanelWidth");
             }
         }
-        private static Product selectedProduct;
 
-        private static async void SetSelectedProduct()
+        private static void SetSelectedProduct()
         {
-            RequestMethods methods = new RequestMethods();
-            Requester.CreateRequest(methods.GetNextProduct(), selectedTrade.ProductId);
-            selectedProduct = await Requester.WaitResponseAsync<Product>();
+            SelectedProduct = methods.GetNextProduct(selectedTrade.ProductId);
         }
 
         public static Trade SelectedTrade
@@ -47,6 +57,7 @@ namespace AuctionClient
                 selectedTrade = value;
                 SetSelectedProduct();
                 OnStaticPropertyChanged("SelectedTrade");
+                OnStaticPropertyChanged("SelectedProduct");
             }   
         }
 
@@ -57,38 +68,50 @@ namespace AuctionClient
         }
 
         private RelayCommand enterToTradeCommand;
+
         public RelayCommand EnterToTradeCommand
         {
             get
             {
-                return enterToTradeCommand ?? (enterToTradeCommand = new RelayCommand(obj => EnterToTrade()));
+                return enterToTradeCommand ?? (enterToTradeCommand = new RelayCommand(EnterToTrade));
             }
         }
 
-        public static Product SelectedProduct { get => selectedProduct; set => selectedProduct = value; }
+        public static Product SelectedProduct { get; set; }
 
         private void EnterToTrade()
         {
-            RequestMethods methods = new RequestMethods();
-            Requester.CreateRequest(methods.EnterToTrade(), SelectedTrade.TradeId);
-            bool isEntered = Requester.WaitResponse<bool>();
-            if (isEntered)
+            try
             {
-                return;
+                bool isEntered = methods.EnterToTrade(SelectedTrade.TradeId);
+                if (isEntered)
+                {
+                    MainWindow.FrameContent = new AuctionPage();
+                    return;
+                }
+                else
+                {
+                    MainWindow.FrameContent = new AfterTrade();
+                }
             }
-            else
+            catch(Exception ex)
             {
-                MainWindow.FrameContent = new AfterTrade();
+                MessageBox.Show(ex.Message);
             }
         }
 
         public TradeMenuViewModel()
         {
             //listViewWidth
-            RequestMethods methods = new RequestMethods();
-            Requester.CreateRequest(methods.GetActualTrades());
-            List<Trade> list = Requester.WaitResponse<List<Trade>>();
-            TradesList = new ObservableCollection<Trade>(list);
+            try
+            {
+                List<Trade> list = methods.GetActualTrades();
+                TradesList = new ObservableCollection<Trade>(list);
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
     }

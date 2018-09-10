@@ -21,7 +21,7 @@ namespace AuctionClient
             DataContext = this;
             userAcc = account;
             mFrame = MainFrame;
-            FrameContent = new TradesMenu();
+            //FrameContent = new TradesMenu();
             Main = this;
         }
 
@@ -44,7 +44,7 @@ namespace AuctionClient
             set
             {
                 windowStatus = value;
-                OnPropertyChanged("WindowStatus");
+                RaisePropertyChanged("WindowStatus");
             }
         }
 
@@ -58,7 +58,7 @@ namespace AuctionClient
             }
         }
 
-        private void OnPropertyChanged(string v)
+        private void RaisePropertyChanged(string v)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(v));
         }
@@ -84,22 +84,36 @@ namespace AuctionClient
 
         private void SetLocalStatusBarTrade(string response)
         {
-            Dispatcher.Invoke(() =>
+            try
             {
-                ActualPrice.Text = response;
-            });
+                Dispatcher.Invoke(() =>
+                {
+                    ActualPrice.Text = response;
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void SetStatusBarProduct(string response)
         {
-            actualProduct = ClientAuction.DeserializeFromString<Product>(response);
-            Dispatcher.Invoke(() =>
+            try
             {
-                ActualLot.Text = actualProduct.Name;
-            });
+                actualProduct = ClientAuction.DeserializeFromString<Product>(response);
+                Dispatcher.Invoke(() =>
+                {
+                    ActualLot.Text = actualProduct.Name;
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
-        private async void Auction_Click(object sender, RoutedEventArgs e)
+        private void Auction_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -114,7 +128,7 @@ namespace AuctionClient
                 //}
                 //else
                 //{
-                    FrameContent = new TradesMenu();
+                FrameContent = new TradesMenu();
                 //}
             }
             catch (Exception ex)
@@ -165,7 +179,7 @@ namespace AuctionClient
                 EnteringWindow entering = new EnteringWindow();
                 entering.Show();
             });
-            Requester.Timer?.Dispose();
+            //Requester.Timer?.Dispose();
             ClientAuction.ClearConnect();
             Main.Dispatcher.Invoke(() =>
             {
@@ -197,7 +211,7 @@ namespace AuctionClient
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            Requester.Timer?.Dispose();
+            //Requester.Timer?.Dispose();
             ClientAuction.Disconnect();
             System.Windows.Threading.Dispatcher.ExitAllFrames();
         }

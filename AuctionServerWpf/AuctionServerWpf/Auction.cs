@@ -5,11 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Web.Script.Serialization;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace AuctionServerWpf
 {
-    class Auction
+    public class Auction
     {
         private AuctionServer server;
         private readonly long auctionId;
@@ -35,9 +37,17 @@ namespace AuctionServerWpf
                 if (auction.AuctionId == id)
                 {
                     auction.AddClient(client);
+                    client.Auction = auction;
                     return true;
                 }
             }
+            return false;
+        }
+
+        public bool TradeLeave(ClientObject client)
+        {
+            clientList.Remove(client);
+            client.Auction = null;
             return false;
         }
 
@@ -54,7 +64,7 @@ namespace AuctionServerWpf
                 }
                 throw new Exception($"Trade with id = {id} doesn't exist");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error");
                 return false;
@@ -71,7 +81,7 @@ namespace AuctionServerWpf
             auctionId = trade.TradeId;
         }
 
-        public void AddClient(ClientObject client)
+        private void AddClient(ClientObject client)
         {
             clientList.Add(client);
         }
@@ -80,7 +90,7 @@ namespace AuctionServerWpf
         //public  int TimeWithoutBets { get => timeWithoutBets; set => timeWithoutBets = value; }
         //public Timer Timer { get => timer; set => timer = value; }
 
-        private  int timeWithoutBets = 0;
+        private int timeWithoutBets = 0;
 
         public delegate void MethodContainer();
 
@@ -93,12 +103,17 @@ namespace AuctionServerWpf
             if (timeWithoutBets <= 1000)
             {
                 timeWithoutBets++;
-                MainWindow.Main.Dispatcher.Invoke(() =>
+                Response response = new Response(methods.SetTimer(), timeWithoutBets.ToString());
+                server.BroadcastMessage(AuctionServer.SerializeToString(response) + "%", clientList);
+                //MainWindow.Main.TradeTimer.Text = timeWithoutBets.ToString();
+            }
+            else
+            {
+                lock (locker)
                 {
-                    Response response = new Response(methods.SetTimer(), timeWithoutBets.ToString());
-                    server.BroadcastMessage(AuctionServer.SerializeToString(response) + "%", clientList);
-                    MainWindow.Main.TradeTimer.Text = timeWithoutBets.ToString();
-                });
+                    System.Threading.Monitor.Pulse(locker);
+                }
+                timer.Stop();
             }
         }
 
@@ -114,57 +129,51 @@ namespace AuctionServerWpf
             // Hook up the Elapsed event for the timer. 
             timer.Elapsed += OnTimedEvent;
             timer.AutoReset = true;
+            timer.Start();
+        }
+
+        public static Auction GetTrade(int id)
+        {
+            return auctionsList.Where(n => n.AuctionId == id).First();
         }
 
         RequestMethods methods = new RequestMethods();
 
-        public bool IsTradeStarted  => isTradeStarted;
+        public bool IsTradeStarted => isTradeStarted;
 
         public long AuctionId => auctionId;
 
+        public int TimeWithoutBets { get => timeWithoutBets; set => timeWithoutBets = value; }
+
+        public float ActualTradeMaxBet { get => actualTrade.MaxBet; set => actualTrade.MaxBet = value; }
+        public Trade ActualTrade { get => actualTrade; set => actualTrade = value; }
+        private Object locker = new object();
+
         public void CreateTimer()
         {
-            double interval = actualTrade.TradeStartTime.TimeOfDay.TotalMilliseconds - DateTime.Now.TimeOfDay.TotalMilliseconds;
-            methodStartTimer = new Timer(interval);
-            timer.Elapsed += OnCreateTradeEvent;
-            timer.Start();
+            //double interval = actualTrade.TradeStartTime.TimeOfDay.TotalMilliseconds - DateTime.Now.TimeOfDay.TotalMilliseconds;
+            methodStartTimer = new Timer(100);
+            methodStartTimer.Elapsed += OnCreateTradeEvent;
+            methodStartTimer.AutoReset = false;
+            methodStartTimer.Start();
         }
 
         private void StartTrade()
-        {
-            BackgroundWorker worker = new BackgroundWorker();
-            using (AuctionContext db = new AuctionContext())
+        {   
+            try
             {
-                Product product = db.Products.Find(actualTrade.ProductId);
-                MainWindow.Main.ProductName.Text = product.Name;
-                MainWindow.Main.ProductId.Text = actualTrade.TradeId.ToString();
-            }
-            isTradeStarted = true;
-            worker.DoWork += (o, ea) =>
-            {
-                timer.Start();
-                while (true)
+                using (AuctionContext db = new AuctionContext())
                 {
-                    if (timeWithoutBets >= 1000)
-                    {
-                        if (timer != null)
-                        {
-                            timer.Stop();
-                        }
-                        MainWindow.Main.Dispatcher.Invoke(() =>
-                        {
-                            MainWindow.Main.IsTradeRuningNow = false;
-                            MainWindow.Main.TradeTimer.Text = "STOP";
-                        });
-                        Response response = new Response(methods.SetTimer(), "STOP");
-                        server.FullBroadcastMessage(AuctionServer.SerializeToString(response) + "%");
-                        break;
-                    }
+                    Product product = db.Products.Find(actualTrade.ProductId);
                 }
-
-            };
-            worker.RunWorkerCompleted += (o, ea) =>
-            {
+                isTradeStarted = true;
+                SetTimer();
+                lock (locker)
+                {
+                    System.Threading.Monitor.Wait(locker);
+                }
+                Response response = new Response(methods.SetTimer(), "STOP");
+                server.FullBroadcastMessage(AuctionServer.SerializeToString(response) + "%");
                 timeWithoutBets = 0;
                 actualTrade.TradeFinishTime = DateTime.Now;
                 using (AuctionContext db = new AuctionContext())
@@ -177,7 +186,7 @@ namespace AuctionServerWpf
                         product.IsSold = true;
                         product.Price = actualTrade.MaxBet;
                     }
-                    else if (db.Trades.Count() > 1)
+                    else 
                     {
                         var trade = db.Trades.Remove(db.Trades.Find(actualTrade.TradeId));
                         db.SaveChanges();
@@ -185,10 +194,12 @@ namespace AuctionServerWpf
                     }
                     db.SaveChanges();
                 }
-                //OnTradeFinish?.Invoke();
-            };
-            worker.RunWorkerAsync();
-            return;
+                return;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

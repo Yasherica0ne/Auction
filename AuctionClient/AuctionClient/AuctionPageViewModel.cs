@@ -1,4 +1,5 @@
 ﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,25 +15,17 @@ namespace AuctionClient
     {
         public AuctionPageViewModel()
         {
+            methods = RequestMethods.GetRequestMethods();
             Requester.OnTimer += TimerSetter;
             Requester.OnTradeupdate += TradeUpdate;
             SetActualTrade();
             ClientAuction.IsOpenMain = true;
-            RaiseMaxBetCommand = new RelayCommand(RaiseMaxBet);
         }
 
-        //private Account actualAccount;
-        private Trade actualTrade;
-        private Product actualProduct;
         private string timer;
-        //private MainWindow mainWindow;
 
-        //public Account ActualAccount { get => actualAccount; set => actualAccount = value; }
-        public Trade ActualTrade { get => actualTrade; set => actualTrade = value; }
-        public Product ActualProduct { get => actualProduct; set => actualProduct = value; }
-
-        private float topPriceF;
-
+        public Trade ActualTrade { get; set; }
+        public Product ActualProduct { get; set; }
 
         public string TopPrice => TopPriceF + "$";
 
@@ -48,50 +41,56 @@ namespace AuctionClient
 
         public float TopPriceF
         {
-            get => topPriceF;
+            get => ActualTrade.MaxBet;
             set
             {
-                topPriceF = value;
+                ActualTrade.MaxBet = value;
                 RaisePropertyChanged("TopPrice");
             }
         }
 
         public void TimerSetter(string response)
         {
-            if (response != null)
+            try
             {
-                Dispatcher.CurrentDispatcher.Invoke(() =>
+                if (response != null)
                 {
-                    if (!"STOP".Equals(response))
+                    Dispatcher.CurrentDispatcher.Invoke(() =>
                     {
-                        Timer = response;
-                    }
-                    else
-                    {
-                        MainWindow.FrameContent = new AfterTrade();
-                    }
-                });
+                        if (!"STOP".Equals(response))
+                        {
+                            Timer = response;
+                        }
+                        else
+                        {
+                            MainWindow.FrameContent = new AfterTrade();
+                        }
+                    });
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
         }
 
         public void TradeUpdate(string response)
         {
-            actualTrade = ClientAuction.DeserializeFromString<Trade>(response);
+            ActualTrade = ClientAuction.DeserializeFromString<Trade>(response);
             Dispatcher.CurrentDispatcher.Invoke(() =>
             {
                 TopPriceF = ActualTrade.MaxBet;
             });
         }
 
-        RequestMethods methods = new RequestMethods();
+        RequestMethods methods;
 
-        private async void SetActualTrade()
+        private void SetActualTrade()
         {
             try
             {
-                actualTrade = TradeMenuViewModel.SelectedTrade;
-                Requester.CreateRequest(methods.GetActualTimer());
-                string stringResponse = await Requester.WaitResponseAsync<string>();
+                ActualTrade = TradeMenuViewModel.SelectedTrade;
+                string stringResponse = methods.GetActualTimer(ActualTrade.TradeId);
                 if (!"STOP".Equals(stringResponse))
                 {
                     Timer = stringResponse;
@@ -101,8 +100,7 @@ namespace AuctionClient
                     Timer = stringResponse;
                     MainWindow.FrameContent = new AfterTrade();
                 }
-                Requester.CreateRequest(methods.GetActualProduct(), actualTrade.ProductId);
-                actualProduct = await Requester.WaitResponseAsync<Product>();
+                ActualProduct = methods.GetActualProduct(ActualTrade.ProductId);
             }
             catch (Exception ex)
             {
@@ -113,41 +111,60 @@ namespace AuctionClient
         public delegate void MethodContainer(string response);
         public static event MethodContainer OnStatusBarLocalTradeUpdate;
 
-        public ICommand RaiseMaxBetCommand { get; private set; }
 
-
-        private void RaiseMaxBet(object sender, RoutedEventArgs e)
-        {
-            Comma
-        }
-
-        private async void RaiseMaxBet_Click(object sender, RoutedEventArgs e)
+        private async void RaiseMaxBet(Object sender)
         {
             try
             {
                 string value = sender.ToString();
                 if ("X2".Equals(value))
                 {
-                    actualTrade.MaxBet *= 2;
+                    ActualTrade.MaxBet *= 2;
                 }
                 else
                 {
-                    actualTrade.MaxBet += int.Parse(sender.ToString());
+                    ActualTrade.MaxBet += (int)sender;
                 }
-                TopPriceF = actualTrade.MaxBet;
-                OnStatusBarLocalTradeUpdate?.Invoke(actualTrade.MaxBet + "$");
-                RequestMethods methods = new RequestMethods();
-                Requester.CreateRequest(methods.RaiseMaxBet(), value);
-                bool stringResponse = await Requester.WaitResponseAsync<bool>();
+                TopPriceF = ActualTrade.MaxBet;
+                OnStatusBarLocalTradeUpdate?.Invoke(ActualTrade.MaxBet + "$");
+                bool stringResponse = await methods.RaiseMaxBetAsync(value);
                 if (stringResponse)
                 {
                     MessageBox.Show("Ставка сделана", "Уведомление");
+                }
+                else
+                {
+                    MessageBox.Show("Ставка не сделана", "Уведомление");
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Ошибка");
             }
+        }
+
+        private RelayCommand<Object> raiseMaxBetCommand;
+        public RelayCommand<Object> RaiseMaxBetCommand
+        {
+            get
+            {
+                return raiseMaxBetCommand ?? (raiseMaxBetCommand = new RelayCommand<Object>(RaiseMaxBet));
+            }
+        }
+
+        private RelayCommand quitButtonCommand;
+        public RelayCommand QuitButtonCommand
+        {
+            get
+            {
+                return quitButtonCommand ?? (quitButtonCommand = new RelayCommand(QuitButtonClick));
+            }
+        }
+
+        public void QuitButtonClick()
+        {
+            methods.LeaveTrade();
+            MainWindow.FrameContent = new TradesMenu();
         }
 
         public void Dispose()

@@ -21,7 +21,7 @@ namespace AuctionClient
     public partial class MyCabPage : Page
     {
         Account account;
-        RequestMethods methods = new RequestMethods();
+        RequestMethods methods = RequestMethods.GetRequestMethods();
 
         public MyCabPage(Account account)
         {
@@ -39,8 +39,7 @@ namespace AuctionClient
         {
             try
             {
-                Requester.CreateRequest(methods.GetPurchaseList(), account.AccountId);
-                List<Product> prodList = await Requester.WaitResponseAsync<List<Product>>();
+                List<Product> prodList = await methods.GetPurchaseListAsync(account.AccountId);
                 if (prodList.Count == 0) return;
                 ProductList.ItemsSource = prodList;
             }
@@ -55,8 +54,7 @@ namespace AuctionClient
         {
             try
             {
-                Requester.CreateRequest(methods.GetSalesList(), account.AccountId);
-                List<Product> prodList = await Requester.WaitResponseAsync<List<Product>>();
+                List<Product> prodList = await methods.GetSalesListAsync(account.AccountId); ;
                 if (prodList.Count == 0) return;
                 ProductList.ItemsSource = prodList;
             }

@@ -1,8 +1,13 @@
-﻿using System;
+﻿using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.Messaging;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
+using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +18,7 @@ using System.Windows.Threading;
 
 namespace AuctionClient
 {
-    class EnteringWindowViewModel : BaseViewModel
+    class EnteringWindowViewModel : ViewModelBase
     {
 
 
@@ -39,10 +44,10 @@ namespace AuctionClient
             return buffer.ToString();
         }
 
-        private string GetEncryptPass(string cryptPass, string login)
+        private SecureString GetEncryptPass(string cryptPass, string login)
         {
             long code = 0;
-            StringBuilder buffer = new StringBuilder();
+            SecureString buffer = new SecureString();
             char[] charsLogin = login.ToCharArray();
             for (int i = 0; i < login.Length; i++)
                 code += charsLogin[i];
@@ -56,9 +61,10 @@ namespace AuctionClient
                 buf *= chars.Length;
                 buf = Math.Round(buf);
                 buf -= code;
-                buffer.Append((char)buf);
+                buffer.AppendChar((char)buf);
             }
-            return buffer.ToString();
+            buffer.MakeReadOnly();
+            return buffer;
         }
 
         private RelayCommand newAccountClickCommand;
@@ -66,7 +72,7 @@ namespace AuctionClient
         {
             get
             {
-                return newAccountClickCommand ?? (newAccountClickCommand = new RelayCommand(obj => NewAccount_Click()));
+                return newAccountClickCommand ?? (newAccountClickCommand = new RelayCommand(NewAccount_Click));
             }
         }
 
@@ -75,7 +81,7 @@ namespace AuctionClient
         {
             get
             {
-                return enterClickCommand ?? (enterClickCommand = new RelayCommand(obj => Enter_Click()));
+                return enterClickCommand ?? (enterClickCommand = new RelayCommand(Enter_Click));
             }
         }
 
@@ -84,7 +90,7 @@ namespace AuctionClient
         {
             get
             {
-                return cancelClickCommand ?? (cancelClickCommand = new RelayCommand(obj => Cancel_Click()));
+                return cancelClickCommand ?? (cancelClickCommand = new RelayCommand(Cancel_Click));
             }
         }
 
@@ -93,7 +99,7 @@ namespace AuctionClient
         {
             get
             {
-                return loginChangedCommand ?? (loginChangedCommand = new RelayCommand(obj => Login_TextChanged()));
+                return loginChangedCommand ?? (loginChangedCommand = new RelayCommand(Login_TextChanged));
             }
         }
 
@@ -102,40 +108,44 @@ namespace AuctionClient
         {
             get
             {
-                return passwordChangedCommand ?? (passwordChangedCommand = new RelayCommand(obj => Password_PasswordChanged()));
+                return passwordChangedCommand ?? (passwordChangedCommand = new RelayCommand(Password_PasswordChanged));
             }
         }
-        
-        private static EnteringWindow entering;
+
+        //private static EnteringWindow entering;
         private bool isSavePassword;
         private bool indicatorIsBusy;
         private bool enterButtonIsEnabled;
         private bool savePasswordIsChecked;
         private string login;
 
-        public EnteringWindowViewModel(EnteringWindow enteringWindow)
+        public EnteringWindowViewModel() //EnteringWindow enteringWindow)
         {
-            entering = enteringWindow;
+            //entering = enteringWindow;
             ServerConnector.ConnectToServer();
             if (System.IO.File.Exists(fileName))
             {
                 Account account = Account.Deserialize<Account>(fileName);
-                login = account.Login;
-                entering.PasswordBox.Password = GetEncryptPass(account.Password, account.Login);
-                IsSavePassword = true;
-                EnterButtonIsEnabled = true;
+                Login = account.Login;
+                Password = GetEncryptPass(account.Password, account.Login);
+                Task.Run(() =>
+                {
+                    Messenger.Default.Send(Password);
+                    EnterButtonIsEnabled = true;
+                });
+                //IsSavePassword = true;
             }
         }
 
-        public EnteringWindow Entering
-        {
-            get => entering;
-            set
-            {
-                entering = value;
-                OnPropertyChanged("Login");
-            }
-        }
+        //public EnteringWindow Entering
+        //{
+        //    get => entering;
+        //    set
+        //    {
+        //        entering = value;
+        //        RaisePropertyChanged("Login");
+        //    }
+        //}
 
         public string Login
         {
@@ -143,18 +153,12 @@ namespace AuctionClient
             set
             {
                 login = value;
-                OnPropertyChanged("Login");
+                RaisePropertyChanged("Login");
             }
         }
-        //public string Password
-        //{
-        //    get => Password;
-        //    set
-        //    {
-        //        Password = value;
-        //        //OnPropertyChanged(Password);
-        //    }
-        //}
+        public SecureString Password { get; set; }
+
+        private string StrPassword { get => new NetworkCredential("", Password).Password; }
 
         public bool IsSavePassword
         {
@@ -162,7 +166,7 @@ namespace AuctionClient
             set
             {
                 isSavePassword = value;
-                OnPropertyChanged("IsSavePassword");
+                RaisePropertyChanged("IsSavePassword");
             }
         }
 
@@ -172,7 +176,7 @@ namespace AuctionClient
             set
             {
                 indicatorIsBusy = value;
-                OnPropertyChanged("IndicatorIsBusy");
+                RaisePropertyChanged("IndicatorIsBusy");
             }
         }
 
@@ -182,7 +186,7 @@ namespace AuctionClient
             set
             {
                 enterButtonIsEnabled = value;
-                OnPropertyChanged("EnterButtonIsEnabled");
+                RaisePropertyChanged("EnterButtonIsEnabled");
             }
         }
 
@@ -192,29 +196,26 @@ namespace AuctionClient
             set
             {
                 savePasswordIsChecked = value;
-                OnPropertyChanged("SavePasswordIsChecked");
+                RaisePropertyChanged("SavePasswordIsChecked");
             }
         }
 
-        public void EnterData(string login, string password)
-        {
-            entering.Visibility = Visibility.Visible;
-            Login = login;
-            entering.PasswordBox.Password = password;
-        }
+        //public void EnterData(string login, string password)
+        //{
+        //    entering.Visibility = Visibility.Visible;
+        //    Login = login;
+        //    entering.PasswordBox.Password = password;
+        //}
 
         private void NewAccount_Click()
         {
-            RegistrationWindow registration = new RegistrationWindow
-            {
-                Owner = entering
-            };
+            RegistrationWindow registration = new RegistrationWindow();
             registration.Show();
         }
 
         private bool IsCheckFields()
         {
-            if (!Login.Equals("") && !entering.PasswordBox.Password.Equals("")) return true;
+            if (!Login.Equals("") && !StrPassword.Equals("")) return true;
             else return false;
         }
 
@@ -231,9 +232,8 @@ namespace AuctionClient
                 {
                     if (!IsCheckFields()) throw new Exception("Поле логина или пароля пусто");
                     BackgroundWorker worker = new BackgroundWorker();
-                    RequestMethods methods = new RequestMethods();
+                    RequestMethods methods = RequestMethods.GetRequestMethods();
                     Account account = null;
-                    List<Account> accounts = null;
                     bool IsOpenMain = false;
                     worker.DoWork += (o, ea) =>
                     {
@@ -243,46 +243,41 @@ namespace AuctionClient
                             login = Login;
 
                         });
-                        Requester.CreateRequest(methods.FindUser(), login);
-                        while (Requester.Response == null) ;
-                        List<Account> accs = Requester.WaitResponseAsync<List<Account>>().Result;
-                        if (accs.Count != 0)
+                        Account accs = methods.FindUser(login);
+                        if (accs != null)
                         {
                             Dispatcher.CurrentDispatcher.Invoke(() =>
                             {
-                                accounts = accs.ToList();
+                                account = accs;
                             });
                         }
                     };
 
                     worker.RunWorkerCompleted += (o, ea) =>
                     {
-                        if (accounts.Count() != 0)
-                        {
-                            account = accounts.First();
-                            if (!account.Password.Equals(Account.GetHashCode(entering.PasswordBox.Password)))
-                            {
-                                IndicatorIsBusy = false;
-                                MessageBox.Show("Неверный пароль", "Ошибка", MessageBoxButton.OK);
-                            }
-                            else IsOpenMain = true;
-                        }
-                        else
+                        if (!account.Password.Equals(Account.GetHashCode(StrPassword)))
                         {
                             IndicatorIsBusy = false;
-                            MessageBox.Show("Неверное имя аккаунта", "Ошибка", MessageBoxButton.OK);
+                            MessageBox.Show("Неверный пароль", "Ошибка", MessageBoxButton.OK);
                         }
+                        else IsOpenMain = true;
+                        //}
+                        //else
+                        //{
+                        //    IndicatorIsBusy = false;
+                        //    MessageBox.Show("Неверное имя аккаунта", "Ошибка", MessageBoxButton.OK);
+                        //}
                         if (IsOpenMain)
                         {
-                            Requester.CreateRequest(methods.SetAccount(), account);
+                            methods.SetAccount(account);
                             if (SavePasswordIsChecked)
                             {
-                                Account.Serialize(new Account(Login, GetCryptPass(entering.PasswordBox.Password, Login)), fileName);
+                                Account.Serialize(new Account(Login, GetCryptPass(StrPassword, Login)), fileName);
                             }
                             MainWindow mainWindow = new MainWindow(account);
                             mainWindow.Show();
                             IndicatorIsBusy = false;
-                            entering.Close();
+                            Messenger.Default.Send(this);
                         }
                     };
                     IndicatorIsBusy = true;
@@ -297,7 +292,7 @@ namespace AuctionClient
 
         private void Cancel_Click()
         {
-            entering.Close();
+            Messenger.Default.Send(this);
         }
 
         private void Login_TextChanged()
@@ -311,8 +306,8 @@ namespace AuctionClient
         }
 
         private void Password_PasswordChanged()
-        { 
-            if (entering.PasswordBox.Password.Equals("")) EnterButtonIsEnabled = false;
+        {
+            if (StrPassword.Equals("")) EnterButtonIsEnabled = false;
             else if (IsCheckFields())
             {
                 EnterButtonIsEnabled = true;

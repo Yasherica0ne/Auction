@@ -27,21 +27,19 @@ namespace AuctionServerWpf
         public MainWindow()
         {
             InitializeComponent();
-            main = this;
+            Main = this;
         }
 
-        private bool isTradeRuningNow = false;
-        private static MainWindow main;
         static AuctionServer server; // сервер
         static Thread listenThread; // потока для прослушивания
 
         public static bool IsTradeRuning
         {
-            get => !main.IsEnabled;
-            set => main.IsEnabled = !value;
+            get => !Main.IsEnabled;
+            set => Main.IsEnabled = !value;
         }
-        public static MainWindow Main { get => main; set => main = value; }
-        public bool IsTradeRuningNow { get => isTradeRuningNow; set => isTradeRuningNow = value; }
+        public static MainWindow Main { get; set; }
+        public bool IsTradeRuningNow { get; set; } = false;
 
         private static int breakTimeSec = 300;
 
@@ -96,7 +94,7 @@ namespace AuctionServerWpf
                 {
                     foreach(Trade trade in db.Trades)
                     {
-                        if(trade.TradeStartTime.ToShortDateString().Equals(DateTime.Now.ToShortDateString()) && trade.TradeStartTime > DateTime.Now)
+                        if(trade.TradeStartTime.ToShortDateString().Equals(DateTime.Now.ToShortDateString()))// && trade.TradeStartTime > DateTime.Now)
                         {
                             StartNewTrade(trade);
                         }
@@ -106,7 +104,7 @@ namespace AuctionServerWpf
                 //AuctionServer.NextTrade = GetNextTrade();
                 //AuctionServer.OnTradeFinish += StartNewTrade;
             }
-            catch
+            catch (Exception ex)
             {
                 server.Disconnect();
             }
@@ -118,11 +116,11 @@ namespace AuctionServerWpf
             RequestMethods methods = new RequestMethods();
             string message = Requester.CreateResponse(methods.DisconnectServer());
             server.FullBroadcastMessage(message);
-            if (AuctionServer.Timer != null)
-            {
-                AuctionServer.Timer.Stop();
-                AuctionServer.Timer.Dispose();
-            }
+            //if (AuctionServer.Timer != null)
+            //{
+            //    AuctionServer.Timer.Stop();
+            //    AuctionServer.Timer.Dispose();
+            //}
             server.Disconnect();
         }
 

@@ -22,7 +22,6 @@ namespace AuctionClient
             {
                 ClientAuction.Client.Connect(ClientAuction.Host, ClientAuction.Port); //подключение клиента
                 ClientAuction.Stream = ClientAuction.Client.GetStream(); // получаем поток
-
                 // запускаем новый поток для получения данных
                 ClientAuction.Key = true;
                 Thread receiveThread = new Thread(new ThreadStart(ClientAuction.ReceiveMessage));
